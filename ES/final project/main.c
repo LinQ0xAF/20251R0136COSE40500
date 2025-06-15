@@ -18,24 +18,22 @@ void EIC_setup();
 
 volatile unsigned int Distance = 0;
 
+unsigned int v_low = 300;
+unsigned int v_mid = 600;
+unsigned int v_high = 900;
+
 void TC3_setup();
 void TC4_setup();
 void TC5_setup();
-
 
 int main()
 {
 	/* Initialize the SAM system */
     SystemInit();
-	
 	GCLK_setup();
-	
 	USART_setup();
-
 	PORT_setup();
-	
 	EIC_setup();
-	
 	RTC_setup();
 	
 	TC3_setup();
@@ -61,19 +59,9 @@ int main()
 void GCLK_setup() {
 	
 	// OSC8M
-	//SYSCTRL->OSC8M.bit.ENABLE = 0; // Disable
 	SYSCTRL->OSC8M.bit.PRESC = 0;  // prescalar to 1
 	SYSCTRL->OSC8M.bit.ONDEMAND = 0;
-	//SYSCTRL->OSC8M.bit.ENABLE = 1; // Enable
 
-	//
-	// Generic Clock Controller setup for RTC
-	// * RTC ID: #4 
-	// * Generator #0 is feeding RTC
-	// * Generator #0 is taking the clock source #6 (OSC8M: 8MHz clock input) as an input
-	//
-	// * EIC ID: #5
-	//
 	GCLK->GENCTRL.bit.ID = 0; // Generator #0
 	GCLK->GENCTRL.bit.SRC = 6; // OSC8M
 	GCLK->GENCTRL.bit.OE = 1 ;  // Output Enable: GCLK_IO
@@ -132,12 +120,8 @@ void USART_setup() {
 	SERCOM5->USART.CTRLA.bit.TXPO = 1 ; // PAD2
 	SERCOM5->USART.CTRLB.bit.CHSIZE = 0 ; // 8-bit data
 	SERCOM5->USART.CTRLA.bit.DORD = 1 ; // LSB first
-	//SERCOM5->USART.CTRLA.bit.SAMPR = 1 ; //
 
 	SERCOM5->USART.BAUD.reg = 0Xc504 ; // 115,200 bps (baud rate) with 8MHz input clock
-	//SERCOM5->USART.BAUD.reg = 0Xe282 ; // 115,200 bps (baud rate) with 16MHz input clock
-	//SERCOM5->USART.BAUD.reg = 0Xec57 ; // 115,200 bps (baud rate) with 24MHz input clock
-	//SERCOM5->USART.BAUD.reg = 0Xf62b ; // 115,200 bps (baud rate) with 48MHz input clock
 
 	SERCOM5->USART.CTRLB.bit.RXEN = 1 ;
 	SERCOM5->USART.CTRLB.bit.TXEN = 1 ;
@@ -181,7 +165,7 @@ void EIC_setup() {
 	EIC->CONFIG[0].bit.SENSE3 = 0x3 ;   // Both-edges detection
 	EIC->INTENSET.bit.EXTINT3 = 1 ;     // External Interrupt 3 is enabled
 	EIC->CTRL.bit.ENABLE = 1 ;          // EIC is enabled	
-	while (EIC->STATUS.bit.SYNCBUSY); // ë°˜ë“œ?‹œ wait
+	while (EIC->STATUS.bit.SYNCBUSY); 
 }
 
 void RTC_setup() {
@@ -268,7 +252,7 @@ void TC5_setup(){
 	TC5->COUNT16.CTRLA.bit.WAVEGEN = 0x1 ; // MFRQ
 	TC5->COUNT16.CTRLA.bit.PRESCALER = 0x7; // 8MHz / 1024 = 7812Hz
 	TC5->COUNT16.COUNT.reg = 0;
-	TC5->COUNT16.CC[0].reg = 7812;  // 1ì´? ì£¼ê¸°
+	TC5->COUNT16.CC[0].reg = 7812;  // 1ÃÊ
 	
 	TC5->COUNT16.INTENSET.bit.MC0 = 1;
 	NVIC->ISER[0] = (1 << 20);        // Enable TC5 interrupt in NVIC
@@ -276,8 +260,6 @@ void TC5_setup(){
 	TC5->COUNT16.CTRLA.bit.ENABLE = 1;
 	while (TC5->COUNT16.STATUS.bit.SYNCBUSY);
 }
-
-
 
 //
 // EIC Interrupt Handler
@@ -303,7 +285,7 @@ void EIC_Handler(void)
 		echo_time_interval = RTC_count / 8 ; // echo interval in usec (8MHz clock input)
 		distance = (echo_time_interval / 2) * 0.034 ; // distance in cm
 		
-		Distance = distance;			//main?—?„œ distanceë¡? ?†?„ë¥? ì¡°ì ˆ?•  ?ˆ˜ ?žˆ?„ë¡? ê¸?ë¡œë²Œ ë³??ˆ˜?— ????ž¥
+		Distance = distance;	
 		
 		print_decimal(distance / 100);
 		distance = distance % 100;
@@ -315,17 +297,14 @@ void EIC_Handler(void)
 	}
 }
 
-unsigned int v_low = 300;
-unsigned int v_mid = 600;
-unsigned int v_high = 900;
 
 void TC5_Handler(void) {
 
 	TC5->COUNT16.INTFLAG.bit.MC0 = 1; // Clear flag
 
-	// PA17(Trigger)ë¡? 10us pulse ?ƒ?„±
+	// 
 	PORT->Group[0].OUTSET.reg = (1 << 17);
-	for (int i = 0; i < 10; i++);                // 10us ?œ ì§?
+	for (int i = 0; i < 10; i++);                // 
 	PORT->Group[0].OUTCLR.reg = (1 << 17);   // Trigger LOW
 		
 	unsigned int distance = Distance;
