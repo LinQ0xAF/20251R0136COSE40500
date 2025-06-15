@@ -1,9 +1,3 @@
-/*
- * GccApplication_lab_prep.c
- *
- * Created: 7/27/2023 10:26:32 AM
- * Author : suhtw
- */ 
 
 #pragma GCC target ("thumb")
 

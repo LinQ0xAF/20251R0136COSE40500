@@ -1,16 +1,8 @@
 /*
  * GccApplication_Assign6.c
  *
- * Created: 2025-05-22 ì˜¤ì „ 3:00:20
+ * Created: 2025-05-22 ?˜¤? „ 3:00:20
  * Author : sbr07
- */ 
-
-
-/*
- * GccApplication2.c
- *
- * Created: 7/3/2023 7:19:17 PM
- * Author : suhtw
  */ 
 
 #pragma GCC target ("thumb")

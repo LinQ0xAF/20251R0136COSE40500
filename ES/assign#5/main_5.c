@@ -1,10 +1,3 @@
-/*
- * GccApplication2.c
- *
- * Created: 7/3/2023 7:19:17 PM
- * Author : suhtw
- */ 
-
 #pragma GCC target ("thumb")
 
 #include "sam.h"
@@ -16,11 +9,6 @@ void PORT_setup();
 void TC3_setup();
 void TC4_setup();
 
-//
-// Prof. Suh: 
-// Note that PA23 (TC4's WO[1]) is held high via pull-up resistor on Zero board
-// Thus, motor is running full-speed after reset
-//
 
 int main()
 {

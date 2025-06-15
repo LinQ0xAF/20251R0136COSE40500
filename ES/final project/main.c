@@ -1,17 +1,10 @@
 /*
  * GccApplication1.c
  *
- * Created: 2025-05-29 ì˜¤í›„ 7:23:43
+ * Created: 2025-05-29 ?˜¤?›„ 7:23:43
  * Author : sbr07
  */ 
 
-
-/*
- * GccApplication2.c
- *
- * Created: 7/3/2023 7:19:17 PM
- * Author : suhtw
- */ 
 
 #pragma GCC target ("thumb")
 
@@ -251,7 +244,7 @@ void TC5_setup(){
 	TC5->COUNT16.CTRLA.bit.WAVEGEN = 0x1 ; // MFRQ
 	TC5->COUNT16.CTRLA.bit.PRESCALER = 0x7; // 8MHz / 1024 = 7812Hz
 	TC5->COUNT16.COUNT.reg = 0;
-	TC5->COUNT16.CC[0].reg = 7812;  // 1ì´ˆ ì£¼ê¸°
+	TC5->COUNT16.CC[0].reg = 7812;  // 1ì´? ì£¼ê¸°
 	
 	TC5->COUNT16.INTENSET.bit.MC0 = 1;
 	NVIC->ISER[0] = (1 << 20);        // Enable TC5 interrupt in NVIC
@@ -267,7 +260,7 @@ void EIC_setup() {
 	EIC->CONFIG[0].bit.SENSE3 = 0x3 ;   // Both-edges detection
 	EIC->INTENSET.bit.EXTINT3 = 1 ;     // External Interrupt 3 is enabled
 	EIC->CTRL.bit.ENABLE = 1 ;          // EIC is enabled	
-	while (EIC->STATUS.bit.SYNCBUSY); // ë°˜ë“œì‹œ wait
+	while (EIC->STATUS.bit.SYNCBUSY); // ë°˜ë“œ?‹œ wait
 }
 
 void RTC_setup() {
@@ -310,7 +303,7 @@ void EIC_Handler(void)
 		echo_time_interval = RTC_count / 8 ; // echo interval in usec (8MHz clock input)
 		distance = (echo_time_interval / 2) * 0.034 ; // distance in cm
 		
-		Distance = distance;			//mainì—ì„œ distanceë¡œ ì†ë„ë¥¼ ì¡°ì ˆí•  ìˆ˜ ìžˆë„ë¡ ê¸€ë¡œë²Œ ë³€ìˆ˜ì— ì €ìž¥
+		Distance = distance;			//main?—?„œ distanceë¡? ?†?„ë¥? ì¡°ì ˆ?•  ?ˆ˜ ?žˆ?„ë¡? ê¸?ë¡œë²Œ ë³??ˆ˜?— ????ž¥
 		
 		print_decimal(distance / 100);
 		distance = distance % 100;
@@ -330,9 +323,9 @@ void TC5_Handler(void) {
 
 	TC5->COUNT16.INTFLAG.bit.MC0 = 1; // Clear flag
 
-	// PA17(Trigger)ë¡œ 10us pulse ìƒì„±
+	// PA17(Trigger)ë¡? 10us pulse ?ƒ?„±
 	PORT->Group[0].OUTSET.reg = (1 << 17);
-	for (int i = 0; i < 10; i++);                // 10us ìœ ì§€
+	for (int i = 0; i < 10; i++);                // 10us ?œ ì§?
 	PORT->Group[0].OUTCLR.reg = (1 << 17);   // Trigger LOW
 		
 	unsigned int distance = Distance;

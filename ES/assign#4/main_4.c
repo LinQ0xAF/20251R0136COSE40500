@@ -1,16 +1,10 @@
 /*
  * GccApplication_Assign4.c
  *
- * Created: 2025-05-05 ì˜¤í›„ 3:15:26
+ * Created: 2025-05-05 ?˜¤?›„ 3:15:26
  * Author : LinQ
  */ 
 
-/*
- * GccApplication_lab_prep.c
- *
- * Created: 7/27/2023 10:26:32 AM
- * Author : suhtw
- */ 
 
 #pragma GCC target ("thumb")
 
