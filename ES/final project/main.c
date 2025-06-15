@@ -1,5 +1,5 @@
 /*
- * GccApplication1.c
+ * GccApplication.c
  *
  * Created: 2025-05-29 ?˜¤?›„ 7:23:43
  * Author : sbr07
@@ -15,7 +15,6 @@ void GCLK_setup();
 void USART_setup();
 void PORT_setup();
 void EIC_setup();
-void RTC_setup();
 
 volatile unsigned int Distance = 0;
 
@@ -52,7 +51,6 @@ int main()
 	
 
 	while (1) {	
-		// Measure the distance
 		PORT->Group[0].OUTSET.reg = 0x1 <<6;
 		PORT->Group[0].OUTCLR.reg = 0x1 <<7;
 	};	
@@ -97,35 +95,6 @@ void GCLK_setup() {
 	GCLK->CLKCTRL.bit.GEN = 0; // Generator #0 selected for TC4, TC5
 	GCLK->CLKCTRL.bit.CLKEN = 1; // Now, clock is supplied to TC4, TC5	
 
-}
-
-void PORT_setup() {
-	
-	//
-	// PORT setup for PA14 (GCLK_IO[0]) to check out clock output using logic analyzer
-	//
-	//PORT->Group[0].PINCFG[14].reg = 0x41;		// peripheral mux: DRVSTR=1, PMUXEN = 1
-	//PORT->Group[0].PMUX[7].bit.PMUXE = 0x07;	// peripheral function H selected
-
-	//
-	// PORT setup for PA17: Built-in LED output & Trigger in Ultrasonic Sensor
-	//
-	PORT->Group[0].PINCFG[17].reg = 0x0;		// peripheral mux enable = 0
-	PORT->Group[0].DIRSET.reg = 0x1 << 17;			// Direction: Output
-	PORT->Group[0].OUT.reg = 0 << 17 ;          // Set the Trigger to 0
-	
-	//
-	// PORT setup for PA16 to take the echo input from Ultrasonic sensor
-	//
-	PORT->Group[0].PINCFG[16].reg = 0x41;		// peripheral mux: DRVSTR=1, PMUXEN = 1
-	PORT->Group[0].PMUX[8].bit.PMUXE = 0x0;		// peripheral function A (EIC) selected: EXTINT[3]
-	
-	// PORT setup for PA6,7 for motor control
-	PORT->Group[0].PINCFG[6].reg = 0x0; // peripheral mux enable = 0
-	PORT->Group[0].PINCFG[7].reg = 0x0; // peripheral mux enable = 0
-	PORT->Group[0].DIRSET.reg = 0x3 << 6; // Direction: Output
-	
-	
 }
 
 void USART_setup() {
@@ -174,6 +143,61 @@ void USART_setup() {
 	SERCOM5->USART.CTRLB.bit.TXEN = 1 ;
 
 	SERCOM5->USART.CTRLA.bit.ENABLE = 1;
+}
+
+void PORT_setup() {
+	
+	//
+	// PORT setup for PA14 (GCLK_IO[0]) to check out clock output using logic analyzer
+	//
+	//PORT->Group[0].PINCFG[14].reg = 0x41;		// peripheral mux: DRVSTR=1, PMUXEN = 1
+	//PORT->Group[0].PMUX[7].bit.PMUXE = 0x07;	// peripheral function H selected
+
+	//
+	// PORT setup for PA17: Built-in LED output & Trigger in Ultrasonic Sensor
+	//
+	PORT->Group[0].PINCFG[17].reg = 0x0;		// peripheral mux enable = 0
+	PORT->Group[0].DIRSET.reg = 0x1 << 17;			// Direction: Output
+	PORT->Group[0].OUT.reg = 0 << 17 ;          // Set the Trigger to 0
+	
+	//
+	// PORT setup for PA16 to take the echo input from Ultrasonic sensor
+	//
+	PORT->Group[0].PINCFG[16].reg = 0x41;		// peripheral mux: DRVSTR=1, PMUXEN = 1
+	PORT->Group[0].PMUX[8].bit.PMUXE = 0x0;		// peripheral function A (EIC) selected: EXTINT[3]
+	
+	// PORT setup for PA6,7 for motor control
+	PORT->Group[0].PINCFG[6].reg = 0x0; // peripheral mux enable = 0
+	PORT->Group[0].PINCFG[7].reg = 0x0; // peripheral mux enable = 0
+	PORT->Group[0].DIRSET.reg = 0x3 << 6; // Direction: Output
+	
+	
+}
+
+void EIC_setup() {
+	// Interrupt configuration for EXTINT[3] via PA16
+	
+	EIC->CONFIG[0].bit.FILTEN3 = 1 ;    // filter is enabled
+	EIC->CONFIG[0].bit.SENSE3 = 0x3 ;   // Both-edges detection
+	EIC->INTENSET.bit.EXTINT3 = 1 ;     // External Interrupt 3 is enabled
+	EIC->CTRL.bit.ENABLE = 1 ;          // EIC is enabled	
+	while (EIC->STATUS.bit.SYNCBUSY); // ë°˜ë“œ?‹œ wait
+}
+
+void RTC_setup() {
+	//
+	// RTC setup: MODE0 (32-bit counter) with COMPARE 0
+	//
+	PM->APBAMASK.bit.RTC_ = 1;
+	
+	RTC->MODE0.CTRL.bit.ENABLE = 0; // Disable first
+	RTC->MODE0.CTRL.bit.MODE = 0; // Mode 0
+	RTC->MODE0.CTRL.bit.MATCHCLR = 1; // match clear
+	
+	// 8MHz RTC clock  --> 10 usec when 80 is counted
+	RTC->MODE0.COMP->reg = 80; // compare register to set up 10usec interval 
+	RTC->MODE0.COUNT.reg = 0x0; // initialize the counter to 0
+	RTC->MODE0.CTRL.bit.ENABLE = 1; // Enable
 }
 
 void TC3_setup() {
@@ -253,31 +277,7 @@ void TC5_setup(){
 	while (TC5->COUNT16.STATUS.bit.SYNCBUSY);
 }
 
-void EIC_setup() {
-	// Interrupt configuration for EXTINT[3] via PA16
-	
-	EIC->CONFIG[0].bit.FILTEN3 = 1 ;    // filter is enabled
-	EIC->CONFIG[0].bit.SENSE3 = 0x3 ;   // Both-edges detection
-	EIC->INTENSET.bit.EXTINT3 = 1 ;     // External Interrupt 3 is enabled
-	EIC->CTRL.bit.ENABLE = 1 ;          // EIC is enabled	
-	while (EIC->STATUS.bit.SYNCBUSY); // ë°˜ë“œ?‹œ wait
-}
 
-void RTC_setup() {
-	//
-	// RTC setup: MODE0 (32-bit counter) with COMPARE 0
-	//
-	PM->APBAMASK.bit.RTC_ = 1;
-	
-	RTC->MODE0.CTRL.bit.ENABLE = 0; // Disable first
-	RTC->MODE0.CTRL.bit.MODE = 0; // Mode 0
-	RTC->MODE0.CTRL.bit.MATCHCLR = 1; // match clear
-	
-	// 8MHz RTC clock  --> 10 usec when 80 is counted
-	RTC->MODE0.COMP->reg = 80; // compare register to set up 10usec interval 
-	RTC->MODE0.COUNT.reg = 0x0; // initialize the counter to 0
-	RTC->MODE0.CTRL.bit.ENABLE = 1; // Enable
-}
 
 //
 // EIC Interrupt Handler
